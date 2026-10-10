@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Приглашение — I love crosswords</title>
+<style>
+  :root { --bg: #f4f7f7; --card: #ffffff; --text: #1a1a1a; --muted: #5f6b6b; --primary: #2E6F6E; --on-primary: #ffffff; --code-bg: #eef2f2; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #121717; --card: #1c2424; --text: #eef3f3; --muted: #9aa8a8; --primary: #4fa3a1; --on-primary: #0d1414; --code-bg: #263131; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif; line-height: 1.5; }
+  main { max-width: 440px; margin: 0 auto; padding: 32px 16px; }
+  .card { background: var(--card); border-radius: 20px; padding: 24px; text-align: center; }
+  h1 { font-size: 1.5rem; margin: 0 0 8px; }
+  p { margin: 0 0 16px; color: var(--muted); }
+  .btn { display: block; width: 100%; padding: 14px; border-radius: 12px; border: 0; font-size: 1rem; font-weight: 600; text-decoration: none; cursor: pointer; margin-top: 10px; }
+  .primary { background: var(--primary); color: var(--on-primary); }
+  .secondary { background: var(--code-bg); color: var(--text); }
+  code { display: block; background: var(--code-bg); border-radius: 10px; padding: 10px; font-size: 0.95rem; word-break: break-all; margin: 8px 0 4px; }
+  .hint { font-size: 0.85rem; margin-top: 20px; }
+  .err { color: #c0392b; }
+</style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <h1 id="title">Приглашение 🎁</h1>
+    <p id="lead"></p>
+    <a id="open" class="btn primary" href="#">Открыть в игре</a>
+    <a id="store" class="btn secondary" href="https://www.rustore.ru/catalog/app/com.postscriptapps.crossword">Скачать игру в RuStore</a>
+    <div id="codebox" class="hint">
+      Не открывается? Скопируй код и вставь его в игре: «Пригласить друга» → поле для кода.
+      <code id="code"></code>
+      <button id="copy" class="btn secondary" type="button">Скопировать код</button>
+    </div>
+  </div>
+</main>
+<script>
+  // ?u=<id друга> — приглашение; ?c=<id>.<id> — подтверждение для пригласившего.
+  var STORE = "https://www.rustore.ru/catalog/app/com.postscriptapps.crossword";
+  var q = new URLSearchParams(location.search);
+  var u = q.get("u") || "", c = q.get("c") || "";
+  var host, param, code;
+  if (/^[0-9a-f]{8}\.[0-9a-f]{8}$/.test(c)) {
+    host = "invok"; param = "c"; code = c;
+    document.getElementById("title").textContent = "Друг принял приглашение 🎉";
+    document.getElementById("lead").textContent = "Открой игру, чтобы забрать бонус сердец за приглашение.";
+  } else if (/^[0-9a-f]{8}$/.test(u)) {
+    host = "invite"; param = "u"; code = u;
+    document.getElementById("lead").textContent = "Друг зовёт тебя в «I love crosswords» — кроссворды на русском. Открой игру и получи бонус сердец.";
+  }
+  var openBtn = document.getElementById("open");
+  if (!code) {
+    document.getElementById("lead").textContent = "Ссылка повреждена — попроси друга прислать её ещё раз.";
+    document.getElementById("lead").className = "err";
+    openBtn.style.display = "none";
+    document.getElementById("codebox").style.display = "none";
+  } else {
+    openBtn.href = "intent://" + host + "?" + param + "=" + code + "#Intent;scheme=wordcross;package=com.postscriptapps.crossword;" +
+      "S.browser_fallback_url=" + encodeURIComponent(STORE) + ";end";
+    document.getElementById("code").textContent = code;
+    document.getElementById("copy").addEventListener("click", function () {
+      var btn = this;
+      navigator.clipboard.writeText(code).then(function () { btn.textContent = "Скопировано ✓"; },
+        function () { btn.textContent = "Не вышло — выдели код вручную"; });
+    });
+  }
+</script>
+</body>
+</html>
