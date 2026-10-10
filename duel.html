@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Вызов на дуэль — I love crosswords</title>
+<style>
+  :root { --bg: #f4f7f7; --card: #ffffff; --text: #1a1a1a; --muted: #5f6b6b; --primary: #2E6F6E; --on-primary: #ffffff; --code-bg: #eef2f2; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #121717; --card: #1c2424; --text: #eef3f3; --muted: #9aa8a8; --primary: #4fa3a1; --on-primary: #0d1414; --code-bg: #263131; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif; line-height: 1.5; }
+  main { max-width: 440px; margin: 0 auto; padding: 32px 16px; }
+  .card { background: var(--card); border-radius: 20px; padding: 24px; text-align: center; }
+  h1 { font-size: 1.5rem; margin: 0 0 8px; }
+  p { margin: 0 0 16px; color: var(--muted); }
+  .btn { display: block; width: 100%; padding: 14px; border-radius: 12px; border: 0; font-size: 1rem; font-weight: 600; text-decoration: none; cursor: pointer; margin-top: 10px; }
+  .primary { background: var(--primary); color: var(--on-primary); }
+  .secondary { background: var(--code-bg); color: var(--text); }
+  code { display: block; background: var(--code-bg); border-radius: 10px; padding: 10px; font-size: 0.85rem; word-break: break-all; margin: 8px 0 4px; }
+  .hint { font-size: 0.85rem; margin-top: 20px; }
+  .err { color: #c0392b; }
+</style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <h1>Вызов на дуэль ⚔️</h1>
+    <p id="lead">Друг зовёт тебя на дуэль в «I love crosswords». Кто быстрее решит тот же кроссворд?</p>
+    <a id="open" class="btn primary" href="#">Открыть в игре</a>
+    <a id="store" class="btn secondary" href="https://www.rustore.ru/catalog/app/com.postscriptapps.crossword">Скачать игру в RuStore</a>
+    <div id="codebox" class="hint">
+      Не открывается? Скопируй код и вставь его в игре: «Дуэль с другом» → поле для кода.
+      <code id="code"></code>
+      <button id="copy" class="btn secondary" type="button">Скопировать код</button>
+    </div>
+  </div>
+</main>
+<script>
+  // Мостик из мессенджера в игру: ссылки wordcross:// там не кликабельны, а https — да.
+  // intent:// открывает игру, если она стоит, иначе Android сам ведёт на страницу в RuStore.
+  var STORE = "https://www.rustore.ru/catalog/app/com.postscriptapps.crossword";
+  var raw = new URLSearchParams(location.search).get("d") || "";
+  var code = /^[A-Za-z0-9_-]{8,600}$/.test(raw) ? raw : "";
+  var openBtn = document.getElementById("open");
+  if (!code) {
+    document.getElementById("lead").textContent = "Ссылка повреждена — попроси друга прислать её ещё раз.";
+    document.getElementById("lead").className = "err";
+    openBtn.style.display = "none";
+    document.getElementById("codebox").style.display = "none";
+  } else {
+    openBtn.href = "intent://duel?d=" + code + "#Intent;scheme=wordcross;package=com.postscriptapps.crossword;" +
+      "S.browser_fallback_url=" + encodeURIComponent(STORE) + ";end";
+    document.getElementById("code").textContent = code;
+    document.getElementById("copy").addEventListener("click", function () {
+      var btn = this;
+      navigator.clipboard.writeText(code).then(function () { btn.textContent = "Скопировано ✓"; },
+        function () { btn.textContent = "Не вышло — выдели код вручную"; });
+    });
+  }
+</script>
+</body>
+</html>
